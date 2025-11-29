@@ -14,7 +14,6 @@ body {
   font-family: 'Fredoka', sans-serif;
   overflow: hidden; 
   touch-action: none;
-  /* CRITICAL FIX FOR IPAD: Use dvh (Dynamic Viewport Height) */
   height: 100dvh; 
   width: 100vw;
 }
@@ -81,7 +80,6 @@ body {
   height: 100%;
   display: flex;
   position: relative;
-  /* Layout direction will be set by JS classes */
 }
 
 /* --- CANVAS --- */
@@ -140,7 +138,6 @@ canvas { display: block; }
   backdrop-filter: blur(10px);
   z-index: 20;
   box-shadow: 0 0 20px rgba(0,0,0,0.05);
-  /* Safe Area for iPhone X/iPad home bar */
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
@@ -150,7 +147,6 @@ canvas { display: block; }
   display: flex;
   gap: 10px;
   padding: 15px;
-  /* Hide scrollbar */
   scrollbar-width: none; 
 }
 .scroll-container::-webkit-scrollbar { display: none; }
@@ -165,7 +161,7 @@ canvas { display: block; }
   color: #636e72;
   white-space: nowrap;
   cursor: pointer;
-  flex-shrink: 0; /* Prevent squishing */
+  flex-shrink: 0; 
 }
 .mode-btn.active {
   background: var(--primary);
@@ -180,7 +176,7 @@ canvas { display: block; }
 .layout-vertical #controls {
   width: 100%;
   border-top: 1px solid rgba(0,0,0,0.1);
-  order: 2; /* Ensure it's at bottom */
+  order: 2; 
 }
 .layout-vertical .scroll-container {
   flex-direction: row;
@@ -192,10 +188,10 @@ canvas { display: block; }
   flex-direction: row;
 }
 .layout-horizontal #controls {
-  width: 180px; /* Fixed width sidebar */
+  width: 180px; 
   height: 100%;
   border-left: 1px solid rgba(0,0,0,0.1);
-  order: 2; /* Right side */
+  order: 2; 
   display: flex;
   flex-direction: column;
 }
@@ -205,11 +201,10 @@ canvas { display: block; }
   height: 100%;
 }
 .layout-horizontal #status-bar {
-  /* Push status bar slightly down in horizontal mode so it doesn't hit back button */
   top: 20px; 
 }
 .layout-horizontal .mode-btn {
-  width: 100%; /* Full width buttons */
+  width: 100%; 
   text-align: center;
   padding: 15px 10px;
 }
