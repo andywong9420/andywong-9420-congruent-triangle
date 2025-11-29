@@ -1,0 +1,132 @@
+:root {
+  --primary: #4A90E2;
+  --accent: #FF6B6B;
+  --bg: #f8f9fa;
+  --text: #2d3436;
+  --glass: rgba(255, 255, 255, 0.9);
+  --shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  font-family: 'Fredoka', sans-serif; /* Friendly rounded font */
+  overflow: hidden; /* Prevent pull-to-refresh on mobile */
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Canvas fills the screen */
+canvas {
+  display: block;
+  z-index: 1;
+}
+
+#canvas-container {
+  flex-grow: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Floating Status Bar */
+#status-bar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--glass);
+  padding: 12px 24px;
+  border-radius: 50px;
+  box-shadow: var(--shadow);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  width: max-content;
+  max-width: 90%;
+}
+
+.status-success {
+  background: #d4edda !important;
+  color: #155724;
+  border: 2px solid #c3e6cb !important;
+  transform: translateX(-50%) scale(1.1) !important;
+}
+
+.status-fail {
+  background: #f8d7da !important;
+  color: #721c24;
+}
+
+/* Bottom Controls */
+#controls {
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  padding: 15px 0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  z-index: 20;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.scroll-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 20px;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+.scroll-container::-webkit-scrollbar { 
+  display: none; 
+}
+
+.mode-btn {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #636e72;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.mode-btn:active {
+  transform: scale(0.95);
+}
+
+.mode-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+}
+
+.mode-btn[data-mode="RHS"].active {
+  background: #6c5ce7;
+  border-color: #6c5ce7;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  #status-bar {
+    font-size: 0.95rem;
+    padding: 10px 16px;
+    width: 85%;
+    justify-content: center;
+  }
+}
