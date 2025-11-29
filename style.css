@@ -3,7 +3,7 @@
   --accent: #FF6B6B;
   --bg: #f8f9fa;
   --text: #2d3436;
-  --glass: rgba(255, 255, 255, 0.9);
+  --glass: rgba(255, 255, 255, 0.95);
   --shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
@@ -11,27 +11,90 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--bg);
-  font-family: 'Fredoka', sans-serif; /* Friendly rounded font */
-  overflow: hidden; /* Prevent pull-to-refresh on mobile */
+  font-family: 'Fredoka', sans-serif;
+  overflow: hidden; 
   touch-action: none;
+  /* CRITICAL FIX FOR IPAD: Use dvh (Dynamic Viewport Height) */
+  height: 100dvh; 
+  width: 100vw;
+}
+
+/* --- LANDING PAGE --- */
+#landing-page {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
   display: flex;
-  flex-direction: column;
-  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  transition: transform 0.4s ease-in-out;
 }
 
-/* Canvas fills the screen */
-canvas {
-  display: block;
-  z-index: 1;
+#landing-page.hidden {
+  transform: translateY(-100%);
 }
 
-#canvas-container {
+.landing-content {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  width: 90%;
+  max-width: 500px;
+}
+
+.landing-content h1 {
+  color: #3f2b96;
+  margin-bottom: 30px;
+}
+
+.layout-options {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+@media (max-width: 500px) {
+  .layout-options { flex-direction: column; }
+}
+
+.layout-btn {
+  flex: 1;
+  border: 2px solid #e0e0e0;
+  background: #f9f9f9;
+  border-radius: 15px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.layout-btn:active { transform: scale(0.95); }
+.layout-btn .icon { display: block; font-size: 3rem; margin-bottom: 10px; }
+.layout-btn .text { font-size: 1.1rem; font-weight: bold; color: #444; }
+.layout-btn small { font-weight: normal; color: #888; font-size: 0.8rem; }
+
+/* --- APP CONTAINER --- */
+#app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: relative;
+  /* Layout direction will be set by JS classes */
+}
+
+/* --- CANVAS --- */
+canvas { display: block; }
+
+#canvas-wrapper {
   flex-grow: 1;
   position: relative;
   overflow: hidden;
+  background: #fff;
 }
 
-/* Floating Status Bar */
+/* --- STATUS BAR --- */
 #status-bar {
   position: absolute;
   top: 20px;
@@ -46,87 +109,111 @@ canvas {
   align-items: center;
   gap: 10px;
   font-weight: 600;
-  font-size: 1.1rem;
   pointer-events: none;
   backdrop-filter: blur(5px);
-  border: 1px solid rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
   width: max-content;
-  max-width: 90%;
+  max-width: 85%;
+  white-space: nowrap;
 }
 
-.status-success {
-  background: #d4edda !important;
-  color: #155724;
-  border: 2px solid #c3e6cb !important;
-  transform: translateX(-50%) scale(1.1) !important;
+/* --- BACK BUTTON --- */
+#back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 50;
+  background: white;
+  border: none;
+  box-shadow: var(--shadow);
+  padding: 10px 15px;
+  border-radius: 30px;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
 }
 
-.status-fail {
-  background: #f8d7da !important;
-  color: #721c24;
-}
+#back-btn:active { transform: scale(0.95); }
 
-/* Bottom Controls */
+/* --- CONTROLS BAR (Common) --- */
 #controls {
   background: var(--glass);
   backdrop-filter: blur(10px);
-  padding: 15px 0;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
   z-index: 20;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  /* Safe Area for iPhone X/iPad home bar */
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 .scroll-container {
   display: flex;
   gap: 10px;
-  overflow-x: auto;
-  padding: 0 20px;
-  /* Hide scrollbar but keep functionality */
+  padding: 15px;
+  /* Hide scrollbar */
   scrollbar-width: none; 
-  -ms-overflow-style: none;
 }
-.scroll-container::-webkit-scrollbar { 
-  display: none; 
-}
+.scroll-container::-webkit-scrollbar { display: none; }
 
 .mode-btn {
   background: white;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
-  padding: 10px 18px;
+  padding: 10px 15px;
   font-family: 'Fredoka', sans-serif;
-  font-size: 1rem;
   font-weight: 600;
   color: #636e72;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s ease;
-  outline: none;
+  flex-shrink: 0; /* Prevent squishing */
 }
-
-.mode-btn:active {
-  transform: scale(0.95);
-}
-
 .mode-btn.active {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
-  box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
 }
 
-.mode-btn[data-mode="RHS"].active {
-  background: #6c5ce7;
-  border-color: #6c5ce7;
+/* --- LAYOUT: VERTICAL (Smartphone) --- */
+.layout-vertical {
+  flex-direction: column;
+}
+.layout-vertical #controls {
+  width: 100%;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  order: 2; /* Ensure it's at bottom */
+}
+.layout-vertical .scroll-container {
+  flex-direction: row;
+  overflow-x: auto;
 }
 
-/* Responsive tweaks */
-@media (max-width: 600px) {
-  #status-bar {
-    font-size: 0.95rem;
-    padding: 10px 16px;
-    width: 85%;
-    justify-content: center;
-  }
+/* --- LAYOUT: HORIZONTAL (iPad/Desktop) --- */
+.layout-horizontal {
+  flex-direction: row;
 }
+.layout-horizontal #controls {
+  width: 180px; /* Fixed width sidebar */
+  height: 100%;
+  border-left: 1px solid rgba(0,0,0,0.1);
+  order: 2; /* Right side */
+  display: flex;
+  flex-direction: column;
+}
+.layout-horizontal .scroll-container {
+  flex-direction: column;
+  overflow-y: auto;
+  height: 100%;
+}
+.layout-horizontal #status-bar {
+  /* Push status bar slightly down in horizontal mode so it doesn't hit back button */
+  top: 20px; 
+}
+.layout-horizontal .mode-btn {
+  width: 100%; /* Full width buttons */
+  text-align: center;
+  padding: 15px 10px;
+}
+
+/* Status Colors */
+.status-success { background: #d4edda !important; color: #155724; border: 2px solid #c3e6cb; }
+.status-fail { background: #f8d7da !important; color: #721c24; }
