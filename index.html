@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>全等三角形探究 (Triangle Congruence Lab)</title>
   
   <!-- Friendly Google Font -->
@@ -15,28 +15,55 @@
 </head>
 <body>
 
-  <!-- Floating Status Bar -->
-  <div id="status-bar" class="status-neutral">
-    <span id="status-icon">🤔</span>
-    <span id="status-text">試著拖動圖形看看...</span>
+  <!-- LANDING PAGE (Selection Screen) -->
+  <div id="landing-page">
+    <div class="landing-content">
+      <h1>📐 全等三角形探究</h1>
+      <p>請選擇您的裝置模式 / Please select layout:</p>
+      
+      <div class="layout-options">
+        <button id="btn-vertical" class="layout-btn">
+          <span class="icon">📱</span>
+          <span class="text">直向模式<br><small>Smartphone (Vertical)</small></span>
+        </button>
+        
+        <button id="btn-horizontal" class="layout-btn">
+          <span class="icon">💻</span>
+          <span class="text">橫向模式<br><small>iPad / Desktop (Horizontal)</small></span>
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- The Canvas Container -->
-  <main id="canvas-container"></main>
+  <!-- APP CONTAINER (Hidden by default) -->
+  <div id="app-container" class="hidden">
+    
+    <!-- Back Button -->
+    <button id="back-btn">⬅ 返回</button>
 
-  <!-- Controls / Mode Switcher -->
-  <nav id="controls">
-    <div class="scroll-container">
-      <button class="mode-btn active" data-mode="ALL">自由 (Free)</button>
-      <button class="mode-btn" data-mode="SSS">SSS</button>
-      <button class="mode-btn" data-mode="SAS">SAS</button>
-      <button class="mode-btn" data-mode="ASA">ASA</button>
-      <button class="mode-btn" data-mode="AAS">AAS</button>
-      <button class="mode-btn" data-mode="RHS">RHS</button>
-      <button class="mode-btn" data-mode="AAA">AAA</button>
-      <button class="mode-btn" data-mode="ASS">ASS (SSA)</button>
+    <!-- Floating Status Bar -->
+    <div id="status-bar" class="status-neutral">
+      <span id="status-icon">🤔</span>
+      <span id="status-text">試著拖動圖形看看...</span>
     </div>
-  </nav>
+
+    <!-- The Canvas Area -->
+    <main id="canvas-wrapper"></main>
+
+    <!-- Controls / Mode Switcher -->
+    <nav id="controls">
+      <div class="scroll-container">
+        <button class="mode-btn active" data-mode="ALL">自由 (Free)</button>
+        <button class="mode-btn" data-mode="SSS">SSS</button>
+        <button class="mode-btn" data-mode="SAS">SAS</button>
+        <button class="mode-btn" data-mode="ASA">ASA</button>
+        <button class="mode-btn" data-mode="AAS">AAS</button>
+        <button class="mode-btn" data-mode="RHS">RHS</button>
+        <button class="mode-btn" data-mode="AAA">AAA</button>
+        <button class="mode-btn" data-mode="ASS">ASS (SSA)</button>
+      </div>
+    </nav>
+  </div>
 
   <script src="main.js"></script>
 </body>
