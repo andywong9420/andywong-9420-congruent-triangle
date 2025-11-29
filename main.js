@@ -3,6 +3,7 @@
   - Supports Vertical/Horizontal Layout Switching
   - Handles Canvas Resizing
   - App Logic (SSS, SAS, etc.)
+  - Special ASS Logic: Automatically detects RHS if angle is 90°
 */
 
 let t1, t2;
@@ -18,9 +19,7 @@ let currentMode = "ALL";
 // --- SETUP & LAYOUT SWITCHING ---
 
 function setup() {
-  // Create canvas but don't attach yet, or attach to wrapper
   let container = document.getElementById('canvas-wrapper');
-  // Initial size (will be resized immediately)
   let c = createCanvas(container.offsetWidth, container.offsetHeight);
   c.parent('canvas-wrapper');
   
@@ -40,33 +39,22 @@ function setupLayoutHandlers() {
   const btnHorizontal = document.getElementById('btn-horizontal');
   const backBtn = document.getElementById('back-btn');
 
-  // Function to enter app
   const enterApp = (layoutClass) => {
-    // Set Layout
-    appContainer.className = ""; // clear
+    appContainer.className = ""; 
     appContainer.classList.add(layoutClass);
-    
-    // Animate
     landingPage.classList.add('hidden');
-    
-    // Wait for transition/DOM update then resize canvas
     setTimeout(() => {
       windowResized();
-      resetTriangles(); // Reset position so they appear in center of new layout
+      resetTriangles();
     }, 100);
-    
-    setTimeout(() => {
-      windowResized(); // Double check resize after animation
-    }, 500);
+    setTimeout(() => windowResized(), 500);
   };
 
   btnVertical.addEventListener('click', () => enterApp('layout-vertical'));
   btnHorizontal.addEventListener('click', () => enterApp('layout-horizontal'));
 
-  // Back Button Logic
   backBtn.addEventListener('click', () => {
     landingPage.classList.remove('hidden');
-    // Optional: Reset app state?
   });
 }
 
@@ -102,7 +90,7 @@ function draw() {
   }
 }
 
-// --- HELPERS (Same as before) ---
+// --- HELPERS ---
 
 function drawBackground() {
   background(248, 249, 250);
@@ -120,7 +108,13 @@ function updateUI(status) {
   if (status.match) {
     statusBar.className = "status-success";
     statusIcon.innerText = "🎉";
-    statusText.innerText = "全等條件成立！"; // Shortened for mobile
+    
+    // Special message for RHS detected inside ASS mode
+    if (status.isRHS) {
+      statusText.innerText = "是 RHS (直角-斜邊-邊) 全等！";
+    } else {
+      statusText.innerText = "全等條件成立！";
+    }
   } else {
     if (currentMode === "AAA" && status.anglesMatch) {
       statusBar.className = "status-fail";
@@ -130,10 +124,6 @@ function updateUI(status) {
       statusBar.className = "status-fail";
       statusIcon.innerText = "⚠️";
       statusText.innerText = "ASS (SSA) 不能證明全等";
-    } else if (currentMode === "RHS" && !status.rightAngle) {
-      statusBar.className = "status-fail";
-      statusIcon.innerText = "📐";
-      statusText.innerText = "RHS 必須包含直角";
     } else {
       statusBar.className = "status-neutral";
       statusIcon.innerText = "🤔";
@@ -149,13 +139,13 @@ function setupUI() {
       buttons.forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
       currentMode = e.target.getAttribute('data-mode');
-      if (currentMode === 'RHS') alignRightAngles();
     });
   });
 }
 
+// --- INTERACTION ---
+
 function touchStarted() {
-  // Prevent touches on UI from triggering canvas logic
   if (event.target.closest('#controls') || event.target.closest('#back-btn') || event.target.closest('#landing-page')) {
     return true;
   }
@@ -213,12 +203,9 @@ function touchMoved() {
     return false;
   }
   else if (draggedPoint) {
-    if (currentMode === "RHS") {
-       handleRHSConstraint(draggedPoint);
-    } else {
-       draggedPoint.x = Math.round(constrain(mouseX, 0, width));
-       draggedPoint.y = Math.round(constrain(mouseY, 0, height));
-    }
+    // Standard integer snapping logic (No special RHS constraint logic needed now)
+    draggedPoint.x = Math.round(constrain(mouseX, 0, width));
+    draggedPoint.y = Math.round(constrain(mouseY, 0, height));
     return false;
   } 
   else if (draggedTriangle) {
@@ -243,34 +230,7 @@ function touchEnded() {
   rotatedTriangle = null;
 }
 
-function alignRightAngles() {
-  t1.points[1].x = t1.points[0].x; t1.points[1].y = t1.points[2].y;
-  t2.points[1].x = t2.points[0].x; t2.points[1].y = t2.points[2].y;
-}
-
-function handleRHSConstraint(pt) {
-  let t = pt.parentTriangle;
-  let pts = t.points;
-  let idx = pt.index; 
-  if (idx === 1) {
-    let dx = Math.round(mouseX - pt.x);
-    let dy = Math.round(mouseY - pt.y);
-    for(let p of pts) { p.x += dx; p.y += dy; }
-  } else {
-    let pCorner = pts[1]; 
-    let pOther = (idx === 0) ? pts[2] : pts[0]; 
-    let vFixed = createVector(pOther.x - pCorner.x, pOther.y - pCorner.y);
-    let vPerp = createVector(-vFixed.y, vFixed.x); 
-    let vMouse = createVector(mouseX - pCorner.x, mouseY - pCorner.y);
-    let dot = vMouse.dot(vPerp);
-    let magSq = vPerp.magSq();
-    if (magSq > 0) {
-      let scalar = dot / magSq;
-      pt.x = Math.round(pCorner.x + vPerp.x * scalar);
-      pt.y = Math.round(pCorner.y + vPerp.y * scalar);
-    }
-  }
-}
+// --- TRIANGLE CLASS ---
 
 class Triangle {
   constructor(x1, y1, x2, y2, x3, y3) {
@@ -353,7 +313,7 @@ class Triangle {
     else if (currentMode === "SAS") { showS[0] = true; showA[1] = true; showS[1] = true; }
     else if (currentMode === "ASA") { showA[0] = true; showS[0] = true; showA[1] = true; }
     else if (currentMode === "AAS") { showA[0] = true; showA[1] = true; showS[1] = true; }
-    else if (currentMode === "RHS") { showS[0] = true; showA[1] = true; showS[2] = true; }
+    // RHS Removed
     else if (currentMode === "AAA") { showA = [true, true, true]; }
     else if (currentMode === "ASS") { showA[0] = true; showS[0] = true; showS[1] = true; }
 
@@ -375,7 +335,8 @@ class Triangle {
       if (!showA[i]) continue;
       let valStr = data.angles[i]; let pV = p[i];
       noFill(); stroke(80); strokeWeight(2);
-      if ((currentMode === 'RHS' && i === 1) || valStr === "90") { drawRightAngleSymbol(pV, p[(i+1)%3], p[(i+2)%3]); }
+      // Show Right Angle symbol if it is 90
+      if (valStr === "90") { drawRightAngleSymbol(pV, p[(i+1)%3], p[(i+2)%3]); }
       else { arc(pV.x, pV.y, 40, 40, 0, TWO_PI); }
       fill(50); noStroke(); textSize(13); textStyle(NORMAL);
       let dx = c.x - pV.x; let dy = c.y - pV.y;
@@ -399,13 +360,15 @@ function drawRightAngleSymbol(pCorner, pNext, pPrev) {
     line(p2.x, p2.y, p3.x, p3.y);
 }
 
+// --- CHECK STATUS ---
+
 function checkStatus() {
   let d1 = t1.getFormattedData();
   let d2 = t2.getFormattedData();
   const eq = (a, b) => a === b;
   let s1 = d1.sides; let a1 = d1.angles;
   let s2 = d2.sides; let a2 = d2.angles;
-  let match = false; let rightAngle = false; let anglesMatch = false; let assMatch = false;
+  let match = false; let anglesMatch = false; let assMatch = false; let isRHS = false;
 
   if (currentMode === "SSS" || currentMode === "ALL") {
      let set1 = s1.slice().sort(); let set2 = s2.slice().sort();
@@ -414,18 +377,25 @@ function checkStatus() {
   else if (currentMode === "SAS") { match = eq(s1[0], s2[0]) && eq(a1[1], a2[1]) && eq(s1[1], s2[1]); }
   else if (currentMode === "ASA") { match = eq(a1[0], a2[0]) && eq(s1[0], s2[0]) && eq(a1[1], a2[1]); }
   else if (currentMode === "AAS") { match = eq(a1[0], a2[0]) && eq(a1[1], a2[1]) && eq(s1[1], s2[1]); }
-  else if (currentMode === "RHS") {
-    rightAngle = (a1[1] === "90" && a2[1] === "90");
-    match = rightAngle && eq(s1[0], s2[0]) && eq(s1[2], s2[2]);
-  }
+  
   else if (currentMode === "AAA") {
      let set1 = a1.slice().sort(); let set2 = a2.slice().sort();
      anglesMatch = eq(set1[0], set2[0]) && eq(set1[1], set2[1]) && eq(set1[2], set2[2]); match = false;
   }
   else if (currentMode === "ASS") {
-     assMatch = eq(a1[0], a2[0]) && eq(s1[0], s2[0]) && eq(s1[1], s2[1]); match = false;
+     // 1. Check if it matches ASS condition (Angle 0, Side 0, Side 1)
+     assMatch = eq(a1[0], a2[0]) && eq(s1[0], s2[0]) && eq(s1[1], s2[1]);
+     
+     // 2. Check for RHS special case:
+     // If the angle (a1[0]) is 90 degrees, then it is RHS.
+     if (assMatch && a1[0] === "90") {
+       match = true;
+       isRHS = true;
+     } else {
+       match = false;
+     }
   }
-  return { match, rightAngle, anglesMatch, assMatch };
+  return { match, anglesMatch, assMatch, isRHS };
 }
 
 function pointInTriangle(px, py, t) {
@@ -438,8 +408,9 @@ function pointInTriangle(px, py, t) {
 
 function resetTriangles() {
   let cx = width / 2; let cy = height / 2;
-  t1 = new Triangle(cx - 200, cy - 100, cx - 200, cy + 100, cx - 50, cy + 100); 
-  t2 = new Triangle(cx + 50, cy - 100, cx + 50, cy + 100, cx + 200, cy + 100);
+  // Initialize with non-90 degrees to show "ASS failure" first, or let user drag
+  t1 = new Triangle(cx - 200, cy - 100, cx - 200, cy + 100, cx - 80, cy + 100); 
+  t2 = new Triangle(cx + 50, cy - 100, cx + 50, cy + 100, cx + 170, cy + 100);
 }
 
 function spawnConfetti() {
